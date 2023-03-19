@@ -20,7 +20,7 @@
 #include <string>
 
 /// \brief master namespace
-namespace tenacitas::program::alg {
+namespace tenacitas::lib::program::alg {
 
 /// \brief Program options parser
 struct options {
@@ -276,7 +276,8 @@ private:
 ///// \brief Entry point for an application
 /////
 ///// This class allows asynchronously execution of a function, which must use
-///// tenacitas::lib::async::dispatch<tenacitas::lib::program::exit_app>() function to
+///// tenacitas::lib::async::dispatch<tenacitas::lib::program::exit_app>()
+///function to
 /// send
 ///// a tenacitas::lib::program::exit_app to end the application
 // struct application {
@@ -369,8 +370,6 @@ private:
 //  bool m_on_exit_handled{false};
 //};
 
-} // namespace program::alg
-
-
+} // namespace tenacitas::lib::program::alg
 
 #endif

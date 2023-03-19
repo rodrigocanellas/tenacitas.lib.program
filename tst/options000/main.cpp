@@ -18,15 +18,15 @@
 #include <utility>
 #include <vector>
 
-#include <tenacitas.program/alg/options.h>
+#include <tenacitas.lib.program/alg/options.h>
 
 using namespace std;
 
 int main(int argc, char **argv) {
-  using namespace tenacitas::program::alg;
+  using namespace tenacitas::lib::program;
 
   try {
-    options _pgm_options;
+    alg::options _pgm_options;
 
     _pgm_options.parse(argc, (char **)argv);
 

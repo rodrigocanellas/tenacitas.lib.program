@@ -1,16 +1,9 @@
-/// \example
-
 /// \copyright This file is under GPL 3 license. Please read the \p LICENSE file
 /// at the root of \p tenacitas directory
 
-/// \author Rodrigo Canellas rodrigo.canellas@gmail.com
+/// \author Rodrigo Canellas - rodrigo.canellas at gmail.com
 
-#include <algorithm>
-#include <array>
-#include <cstdint>
-#include <cstring>
-#include <ctime>
-#include <fstream>
+/// \example options_000
 
 #include <iomanip>
 #include <iostream>
@@ -22,8 +15,6 @@
 #include <vector>
 
 #include <tenacitas.lib.program/alg/options.h>
-
-using namespace std;
 
 int main() {
   try {
@@ -61,12 +52,12 @@ int main() {
         _pgm_options.get_set_param("set_1");
     if (_set) {
       if (_set.value().size() != 2) {
-        cerr << "ERROR! number of values in set parameter should be 2, but it "
-                "is "
+        cerr << "ERROR! number of values in set parameter should be 2, "
+                "but it is "
              << _set.value().size() << endl;
       } else {
         cerr << "set param 'set_1' = ";
-        for (alg::options::value &_value : _set.value()) {
+        for (const alg::options::value &_value : _set.value()) {
           cerr << _value << " ";
         }
         cerr << endl;
@@ -75,7 +66,7 @@ int main() {
       cerr << "ERROR! no set of values found for parameter 'set_1'" << endl;
     }
   } catch (std::exception &_ex) {
-    cerr << "ERROR! '" << _ex.what() << "'" << endl;
+    std::cerr << "ERROR! '" << _ex.what() << "'" << std::endl;
   }
 
   return 0;
