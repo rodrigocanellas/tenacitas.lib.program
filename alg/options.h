@@ -19,7 +19,7 @@
 #include <stdexcept>
 #include <string>
 
-/// \brief master namespace
+/// \brief Class that implement algorithms related to programs
 namespace tenacitas::lib::program::alg {
 
 /// \brief Program options parser
@@ -58,46 +58,7 @@ struct options {
   ///
   /// \throws std::runtime_error
   void parse(int p_argc, char **p_argv,
-             std::initializer_list<name> &&p_mandatory = {}) {
-    int _last = p_argc - 1;
-    int _i = 1;
-    while (_i <= _last) {
-      if (!is_option(p_argv[_i])) {
-        throw std::runtime_error("parameter '" + std::string(p_argv[_i]) +
-                                 "' should be an option");
-      }
-
-      name _name(
-          std::string(&(p_argv[_i][2]), &(p_argv[_i][strlen(p_argv[_i])])));
-
-      if (_i == _last) {
-        m_booleans.insert(std::move(_name));
-        break;
-      }
-
-      ++_i;
-      if (is_option(p_argv[_i])) {
-        m_booleans.insert(std::move(_name));
-      } else {
-
-        if (p_argv[_i][0] == '{') {
-          _i = parse_set(std::move(_name), _last, p_argv, _i);
-        } else {
-          std::string _str(&p_argv[_i][0], &p_argv[_i][strlen(p_argv[_i])]);
-          m_singles.insert({std::move(_name), std::move(_str)});
-          ++_i;
-        }
-      }
-    }
-
-    for (const name &_name : p_mandatory) {
-      if ((!get_bool_param(_name)) && (!get_single_param(_name)) &&
-          (!get_set_param(_name))) {
-        throw std::runtime_error("parameter '" + _name +
-                                 "' should have been defined, but it was not");
-      }
-    }
-  }
+             std::initializer_list<name> &&p_mandatory = {});
 
   /// \brief Retrieves the bool parameter, if possible
   ///
@@ -151,27 +112,7 @@ struct options {
 
   /// \brief Output operator
   friend std::ostream &operator<<(std::ostream &p_out,
-                                  const options &p_options) {
-    for (const options::name &_boolean : p_options.m_booleans) {
-      p_out << "[" << _boolean << "] ";
-    }
-
-    for (options::singles ::const_iterator _ite = p_options.m_singles.begin();
-         _ite != p_options.m_singles.end(); ++_ite) {
-      p_out << "[" << _ite->first << "," << _ite->second << "] ";
-    }
-
-    for (options::sets::const_iterator _ite = p_options.m_sets.begin();
-         _ite != p_options.m_sets.end(); ++_ite) {
-      p_out << "[" << _ite->first << " { ";
-      for (const options::value &_value : _ite->second) {
-        p_out << _value << " ";
-      }
-      p_out << "} ]";
-    }
-
-    return p_out;
-  }
+                                  const options &p_options);
 
 private:
   /// \brief Checks if a string is the start of an option
@@ -210,47 +151,7 @@ private:
   /// \brief p_argv string vector with the set of options
   ///
   /// \brief p_index position in \p p_argv where the set of options starts
-  int parse_set(name &&p_name, int p_last, char **p_argv, int p_index) {
-    std::string _str(&p_argv[p_index][0],
-                     &p_argv[p_index][strlen(p_argv[p_index])]);
-
-    values _values;
-    if (_str.length() != 1) {
-      if (_str[1] == '}') {
-        m_sets.insert({std::move(p_name), std::move(_values)});
-        ++p_index;
-        return p_index;
-      }
-      _str = std::string(&p_argv[p_index][1],
-                         &p_argv[p_index][strlen(p_argv[p_index])]);
-      _values.push_back(std::move(_str));
-    }
-
-    ++p_index;
-
-    while (p_index <= p_last) {
-      int _len = strlen(p_argv[p_index]);
-      if (p_argv[p_index][_len - 1] == '}') {
-        if (_len > 1) {
-          _values.push_back(
-              value(&p_argv[p_index][0], &p_argv[p_index][_len - 1]));
-        }
-        break;
-      } else {
-        _values.push_back(value(&p_argv[p_index][0], &p_argv[p_index][_len]));
-      }
-      ++p_index;
-    }
-
-    if (p_index > p_last) {
-      throw std::runtime_error("option '" + p_name +
-                               "' is a set, but '}' was not found");
-    }
-    m_sets.insert({std::move(p_name), std::move(_values)});
-    ++p_index;
-
-    return p_index;
-  }
+  int parse_set(name &&p_name, int p_last, char **p_argv, int p_index);
 
 private:
   /// \brief Booleans options
@@ -262,6 +163,112 @@ private:
   /// \brief Sets options
   sets m_sets;
 };
+
+void options::parse(int p_argc, char **p_argv,
+                    std::initializer_list<name> &&p_mandatory) {
+  int _last = p_argc - 1;
+  int _i = 1;
+  while (_i <= _last) {
+    if (!is_option(p_argv[_i])) {
+      throw std::runtime_error("parameter '" + std::string(p_argv[_i]) +
+                               "' should be an option");
+    }
+
+    name _name(
+        std::string(&(p_argv[_i][2]), &(p_argv[_i][strlen(p_argv[_i])])));
+
+    if (_i == _last) {
+      m_booleans.insert(std::move(_name));
+      break;
+    }
+
+    ++_i;
+    if (is_option(p_argv[_i])) {
+      m_booleans.insert(std::move(_name));
+    } else {
+
+      if (p_argv[_i][0] == '{') {
+        _i = parse_set(std::move(_name), _last, p_argv, _i);
+      } else {
+        std::string _str(&p_argv[_i][0], &p_argv[_i][strlen(p_argv[_i])]);
+        m_singles.insert({std::move(_name), std::move(_str)});
+        ++_i;
+      }
+    }
+  }
+
+  for (const name &_name : p_mandatory) {
+    if ((!get_bool_param(_name)) && (!get_single_param(_name)) &&
+        (!get_set_param(_name))) {
+      throw std::runtime_error("parameter '" + _name +
+                               "' should have been defined, but it was not");
+    }
+  }
+}
+
+std::ostream &operator<<(std::ostream &p_out, const options &p_options) {
+  for (const options::name &_boolean : p_options.m_booleans) {
+    p_out << "[" << _boolean << "] ";
+  }
+
+  for (options::singles ::const_iterator _ite = p_options.m_singles.begin();
+       _ite != p_options.m_singles.end(); ++_ite) {
+    p_out << "[" << _ite->first << "," << _ite->second << "] ";
+  }
+
+  for (options::sets::const_iterator _ite = p_options.m_sets.begin();
+       _ite != p_options.m_sets.end(); ++_ite) {
+    p_out << "[" << _ite->first << " { ";
+    for (const options::value &_value : _ite->second) {
+      p_out << _value << " ";
+    }
+    p_out << "} ]";
+  }
+
+  return p_out;
+}
+
+int options::parse_set(name &&p_name, int p_last, char **p_argv, int p_index) {
+  std::string _str(&p_argv[p_index][0],
+                   &p_argv[p_index][strlen(p_argv[p_index])]);
+
+  values _values;
+  if (_str.length() != 1) {
+    if (_str[1] == '}') {
+      m_sets.insert({std::move(p_name), std::move(_values)});
+      ++p_index;
+      return p_index;
+    }
+    _str = std::string(&p_argv[p_index][1],
+                       &p_argv[p_index][strlen(p_argv[p_index])]);
+    _values.push_back(std::move(_str));
+  }
+
+  ++p_index;
+
+  while (p_index <= p_last) {
+    int _len = strlen(p_argv[p_index]);
+    if (p_argv[p_index][_len - 1] == '}') {
+      if (_len > 1) {
+        _values.push_back(
+            value(&p_argv[p_index][0], &p_argv[p_index][_len - 1]));
+      }
+      break;
+    } else {
+      _values.push_back(value(&p_argv[p_index][0], &p_argv[p_index][_len]));
+    }
+    ++p_index;
+  }
+
+  if (p_index > p_last) {
+    throw std::runtime_error("option '" + p_name +
+                             "' is a set, but '}' was not found");
+  }
+  m_sets.insert({std::move(p_name), std::move(_values)});
+  ++p_index;
+
+  return p_index;
+}
 
 ///// \brief Application can exit in a gracefully way
 // struct exit_app {
@@ -277,7 +284,7 @@ private:
 /////
 ///// This class allows asynchronously execution of a function, which must use
 ///// tenacitas::lib::async::dispatch<tenacitas::lib::program::exit_app>()
-///function to
+/// function to
 /// send
 ///// a tenacitas::lib::program::exit_app to end the application
 // struct application {
